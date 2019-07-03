@@ -39,7 +39,8 @@ module arb #(parameter NUM_REQS = 4) (
       end
     end
 
-    // use pri_sel with mask if able, else use pri only
+    // use priority encoder with mask check as default
+    // if all requests are masked fall back to priority encoder
     pre_gnt = (pri_sel_mask != 0) ? pri_sel_mask : pri_sel;
   end
 
