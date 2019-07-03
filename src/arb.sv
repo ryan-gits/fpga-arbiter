@@ -14,14 +14,14 @@ module arb #(parameter NUM_REQS = 4) (
 
   logic [NUM_REQS-1:0] pri_sel;
   logic [NUM_REQS-1:0] pri_sel_mask;
-  logic [NUM_REQS-1:0] pre_gnt;
-  logic [NUM_REQS-1:0] gnt_mask = 0;
-  logic [NUM_REQS-1:0] prev_gnt = 0;
+  logic [NUM_REQS-1:0] gnt_next;
+  logic [NUM_REQS-1:0] gnt_mask;
+  logic [NUM_REQS-1:0] prev_gnt;
 
   always_comb begin
     pri_sel      = '0;
     pri_sel_mask = '0;
-    pre_gnt      = '0;
+    gnt_next     = '0;
 
     // priority arbiter
     for (int i=0; i<NUM_REQS; i++) begin
@@ -41,7 +41,7 @@ module arb #(parameter NUM_REQS = 4) (
 
     // use priority encoder with mask check as default
     // if all requests are masked fall back to priority encoder
-    pre_gnt = (pri_sel_mask != 0) ? pri_sel_mask : pri_sel;
+    gnt_next = (pri_sel_mask != 0) ? pri_sel_mask : pri_sel;
   end
 
   always_ff @(posedge clk) begin
@@ -55,7 +55,7 @@ module arb #(parameter NUM_REQS = 4) (
       // no previous valid activity, or granted req has deasserted
       // update gnt and check if saturated
       if ((prev_gnt & req) == '0) begin
-        gnt <= pre_gnt;
+        gnt <= gnt_next;
 
         if (gnt_mask == '1) begin
           gnt_mask <= '0;
